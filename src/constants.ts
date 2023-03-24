@@ -1,1 +1,1 @@
-export const OPENAI_MODEL = "code-davinci-002";
+export const OPENAI_MODEL = "text-davinci-003";
