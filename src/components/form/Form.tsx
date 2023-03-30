@@ -1,17 +1,21 @@
 import IconSend from "@/assets/send.svg";
 import { Conversation } from "@/pages";
 import clsx from "clsx";
+import { useRouter } from "next/router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import useAutoHeightTextArea from "./useAutoHeightTextArea";
 
 type Props = {
-  setConversation: (conversation: any) => void;
+  setConversationList: (conversation: any) => void;
+  conversationList: Conversation[];
 };
 
-export default function Form({ setConversation }: Props) {
+export default function Form({ setConversationList, conversationList }: Props) {
   const [value, setValue] = useState("");
   const [disabled, setDisabled] = useState(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const router = useRouter();
+
   useAutoHeightTextArea(textAreaRef.current, value);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -53,10 +57,47 @@ export default function Form({ setConversation }: Props) {
     }
   };
 
+  const updateConversation = useCallback(
+    async (input: string) => {
+      const data = JSON.parse(input);
+      const { role, id, parentMessageId, conversationId, text } = data;
+      setConversationList((prev: any) => {
+        console.log("setConversationList", prev);
+
+        if (!prev.find((item: any) => item.id === id)) {
+          return [
+            ...prev,
+            {
+              type: "answer",
+              text: prev.text ? prev.text + text : text,
+              conversationId: conversationId,
+              id: id,
+              parentMessageId: parentMessageId,
+              role: role,
+            },
+          ];
+        } else {
+          return [
+            ...prev.slice(0, prev.length - 1),
+            {
+              type: "answer",
+              text: prev.text ? prev.text + text : text,
+              conversationId: conversationId,
+              id: id,
+              parentMessageId: parentMessageId,
+              role: role,
+            },
+          ];
+        }
+      });
+    },
+    [setConversationList]
+  );
+
   const sendPrompt = useCallback(async () => {
     const prompt = textAreaRef.current?.value;
     if (!prompt) return;
-    setConversation((prev: any) => {
+    setConversationList((prev: any) => {
       return [
         ...prev,
         {
@@ -70,24 +111,33 @@ export default function Form({ setConversation }: Props) {
     // TODO: call api to send prompt
     console.log("sending prompt: ", prompt);
     const response = await request(prompt);
-    console.log("🚀 ~ response:", response);
-    const { data } = response;
+    if (response.status === 401) {
+      // redirect to login
+      router.replace("/unauthorized");
+      return;
+    }
+
     setValue("");
-    setConversation((prev: any) => {
-      return [
-        ...prev,
-        {
-          type: "answer",
-          text: data.text,
-          conversationId: data.conversationId,
-          id: data.id,
-          parentMessageId: data.parentMessageId,
-          role: data.role,
-        },
-      ];
-    });
-    setDisabled(false);
-  }, [setConversation]);
+    if (!response.body) return;
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+
+    let done = false;
+
+    while (!done) {
+      const { value, done: doneReading } = await reader.read();
+      done = doneReading;
+      const chunkValue = decoder.decode(value);
+
+      const list = chunkValue.slice(0, -1).split("\n");
+      const chunk = list[list.length - 1];
+
+      if (!chunk) return;
+      updateConversation(chunk);
+      setDisabled(false);
+    }
+  }, [router, setConversationList, updateConversation]);
 
   const request = async (value: string) => {
     const response = await fetch("/api/chatgpt", {
@@ -97,8 +147,7 @@ export default function Form({ setConversation }: Props) {
       },
       body: JSON.stringify({ prompt: value }),
     });
-    const data = await response.json();
-    return data;
+    return response;
   };
 
   return (

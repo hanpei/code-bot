@@ -12,14 +12,14 @@ export type Conversation = {
 };
 
 export default function Home() {
-  const [conversation, setConversation] = useState<Conversation[]>([]);
+  const [conversationList, setConversationList] = useState<Conversation[]>([]);
   return (
     <div className="min-h-screen w-full bg-slate-800">
       <h1 className="p-10 text-center text-3xl font-bold text-white">
         Hello World!
       </h1>
       <div className="flex w-full flex-col items-center">
-        {conversation.map((item) => (
+        {conversationList.map((item) => (
           <div
             key={item.id}
             className={`w-full  p-8  text-center text-gray-100 ${
@@ -38,7 +38,10 @@ export default function Home() {
 
       <footer className="fixed bottom-10 w-full text-center">
         <div className="mx-auto w-full max-w-3xl p-4 text-center">
-          <Form setConversation={setConversation} />
+          <Form
+            setConversationList={setConversationList}
+            conversationList={conversationList}
+          />
         </div>
       </footer>
     </div>

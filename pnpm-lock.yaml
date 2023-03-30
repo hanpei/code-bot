@@ -11,6 +11,7 @@ specifiers:
   clsx: ^1.2.1
   eslint: 8.34.0
   eslint-config-next: 13.1.6
+  eventsource-parser: ^1.0.0
   https-proxy-agent: ^5.0.1
   next: 13.1.6
   openai: ^3.2.1
@@ -31,6 +32,7 @@ dependencies:
   clsx: 1.2.1
   eslint: 8.34.0
   eslint-config-next: 13.1.6_7kw3g6rralp5ps6mg3uyzz6azm
+  eventsource-parser: 1.0.0
   https-proxy-agent: 5.0.1
   next: 13.1.6_biqbaboplfbrettd7655fr4n2y
   openai: 3.2.1
@@ -2881,6 +2883,11 @@ packages:
   /eventsource-parser/0.0.5:
     resolution: {integrity: sha512-BAq82bC3ZW9fPYYZlofXBOAfbpmDzXIOsj+GOehQwgTUYsQZ6HtHs6zuRtge7Ph8OhS6lNH1kJF8q9dj17RcmA==}
     engines: {node: '>=12'}
+    dev: false
+
+  /eventsource-parser/1.0.0:
+    resolution: {integrity: sha512-9jgfSCa3dmEme2ES3mPByGXfgZ87VbP97tng1G2nWwWx6bV2nYxm2AWCrbQjXToSe+yYlqaZNtxffR9IeQr95g==}
+    engines: {node: '>=14.18'}
     dev: false
 
   /fast-deep-equal/3.1.3:

@@ -18,11 +18,16 @@ export default async function handler(
   });
 
   try {
-    const response = await api.sendMessage(req.body.prompt);
-    console.log(response);
-    res.status(200).json({ data: response });
+    await api.sendMessage(req.body.prompt, {
+      onProgress: (progress) => {
+        console.log("progress", progress);
+        res.write(`${JSON.stringify(progress)}\n`);
+      },
+    });
   } catch (error) {
     res.status(500).json({ data: error });
     // console.error('error', error);
+  } finally {
+    res.end();
   }
 }
